@@ -1,10 +1,11 @@
 
 import dotenv from 'dotenv';
-dotenv.config({path: "C:\Users\lucas\Desktop\cursos\javaScript\API\Node\ToDoReact\infodb.env"});
 import express from 'express';
 import cors from 'cors';
 import mysql2 from 'mysql2';
 
+dotenv.config();
+console.log(process.env)
 console.log('DB_USER:', process.env.DB_USER);
 console.log('DB_DATABASE:', process.env.DB_DATABASE);
 
