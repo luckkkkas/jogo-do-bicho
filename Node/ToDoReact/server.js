@@ -1,23 +1,19 @@
 
-import dotenv from 'dotenv';
-import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import mysql2 from 'mysql2';
-
-dotenv.config();
-console.log(process.env)
-console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_DATABASE:', process.env.DB_DATABASE);
+import express from 'express';
 
 const app = express();
-const port = process.env.PORT;
-app.use(express.json());
 app.use(cors());
+dotenv.config();
+app.use(express.json());
+const port = process.env.PORT;
 
 const db = mysql2.createConnection({
-    user: process.env.DB_USER,
     database: process.env.DB_DATABASE,
     password: process.env.DB_PASSWORD,
+    user: process.env.DB_USER,
     host: process.env.DB_HOST
 })
 
@@ -33,30 +29,52 @@ app.get('/', (req, res)=>{
     res.send('valid, json')
 })
 
+app.put('/Login',(req,res)=>{
+    try {
+        const {usuario, pass} = req.body;
+        if(!usuario || !pass){
+            res.status(400).json({erro: "usuario ou senha inválidos"})
+        }
+        
+        const sql = "INSERT INTO logins value(?, ?, ?)"
+        //const id = Math.random()
+        db.query(sql, ['id', pass, usuario], (err, results) => {
+            if(err){
+                console.log("erro ao executar query:", err);
+                return res.status(500).json({erro: "Erro de Servidor"});
+            }
+            console.log(results)
+            return res.sendStatus(200)
+        })
+
+    } catch (error) {
+        console.log("erro interno", error.message)
+        res.status(500).json({erro: "erro interno do servidor"});
+    }
+})
+
 app.post('/Login', (req, res)=>{
     try {
-        const {user, pass} = req.body;
-        if(!user || !pass){
-            req.status(400).json({"erro": "usuário e senha requeridas"})
+        const {usuario, pass} = req.body;
+        if(!usuario || !pass){
+            res.status(400).json({"erro": "usuário e senha requeridas"})
         }
+        const sql = "SELECT * FROM logins WHERE user = ? AND pass = ?"
 
-        const sql = "SELECT * FROM logins WHERE username = ? and password = ?"
-
-        db.query(sql, [user, pass], (err, results) =>{
+        db.query(sql, [usuario, pass], (err, results) =>{
             if (err) {
                console.error('Erro ao executar a query:', err);
                return res.status(500).json({ error: 'Erro no servidor' });
             }
           
-              if (results.length > 0) {
-                res.status(200).json({ message: 'Usuário encontrado', user: results[0] });
+            if (results.length > 0) {
+                res.status(200).json({ message: 'Success'});
             } else {
                res.status(404).json({ error: 'Usuário ou senha incorretos' });
             }
         })
-    //consultar no banco de dados 
     } catch (error) {
-       cconsole.error('Erro interno:', error);
+       console.error('Erro interno:', error);
        res.status(500).json({ error: 'Erro interno do servidor' });
     }
     })
