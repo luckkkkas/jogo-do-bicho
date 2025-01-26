@@ -41,7 +41,7 @@ app.get('/', (req, res) => {
     }
 })
 
-app.post('/Login', (req, res) => {
+app.post('/CreateUser', (req, res) => {
     try {
         const { usuario, pass } = req.body;
         if (!usuario || !pass) {
@@ -50,7 +50,7 @@ app.post('/Login', (req, res) => {
 
         const sql = "INSERT INTO logins value(?, ?, ?)"
         //const id = Math.random()
-        db.query(sql, ['id', pass, usuario], (err, results) => {
+        db.query(sql, ['id', usuario, pass], (err, results) => {
             if (err) {
                 console.log("erro ao executar query:", err);
                 return res.status(500).json({ erro: "Erro de Servidor" });
