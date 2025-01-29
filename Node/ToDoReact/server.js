@@ -22,8 +22,9 @@ const pool = mysql2.createPool({
 
 app.get('/', (req, res) => {
     try {
-        const sql = "SELECT * FROM task"
-        pool.query(sql, (err, results) => {
+        const { id } = req.query;
+        const sql = "SELECT * FROM task WHERE user_id = ?;"
+        pool.query(sql, [id], (err, results) => {
             if (err) {
                 res.status(500).json({ erro: "erro de banco de dados" })
             }
@@ -61,14 +62,14 @@ app.post('/CreateUser', (req, res) => {
 
 app.post('/addTask', (req, res) => {
     try {
-        const { novaTarefa, deadline } = req.body;
+        const { novaTarefa, deadline, userID, states } = req.body;
         if (!novaTarefa) {
             res.status(400)
         }
 
-        const sql = "INSERT INTO task(task, deadline) VALUES (?, ?)"
+        const sql = "INSERT INTO task(task, deadline, user_id, status) VALUES (?, ?, ?, ?)"
 
-        pool.query(sql, [novaTarefa, deadline], (err, results) => {
+        pool.query(sql, [novaTarefa, deadline, userID, states], (err, results) => {
             if (err) {
                 console.log("erro de query nas tasks:", err);
                 return res.status(500).json({ erro: err })
@@ -76,16 +77,16 @@ app.post('/addTask', (req, res) => {
             return res.status(200).json({ sucess: "Task Adicionada" })
         })
     } catch (error) {
-        console.log("erro no servidor")
+        console.log("erro no servidor", error)
         res.status(500).json({ erro: "erro de servidor" })
     }
 })
 
 app.delete('/Delete', (req, res) => {
     try {
-        const { tarefaParaRemover } = req.body;
+        const { id } = req.body;
         const sql = "DELETE FROM task WHERE id = ?";
-        pool.query(sql, [tarefaParaRemover], (err, results) => {
+        pool.query(sql, [id], (err, results) => {
             if (err) {
                 console.log(err)
                 return res.status(400).json({ erro: err })
@@ -109,11 +110,13 @@ app.post('/Login', (req, res) => {
         pool.query(sql, [usuario, pass], (err, results) => {
             if (err) {
                 console.error('Erro ao executar a query:', err);
-                return res.status(500).json({ error: 'Erro no servidor' });
+                return res.status(500).json({ error: 'Erro no servidor',
+                    results
+                });
             }
 
             if (results.length > 0) {
-                res.status(200).json({ message: 'Success' });
+                res.status(200).json({ message: 'Success', results });
             } else {
                 res.status(404).json({ error: 'Usuário ou senha incorretos' });
             }
@@ -121,6 +124,30 @@ app.post('/Login', (req, res) => {
     } catch (error) {
         console.error('Erro interno:', error);
         res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+})
+
+app.put('/Update', (req, res)=>{
+    try {
+        const {id, status} = req.body;
+        const sql = "UPDATE task SET status = ? WHERE id = ?"
+        pool.query(sql, [1, id], (err, results)=>{
+            if (err) {
+                console.error('Erro ao executar a query:', err);
+                return res.status(500).json({ error: 'Erro no servidor',
+                    results
+                });
+            }
+
+            if (results.length > 0) {
+                res.status(200).json({results });
+            } else {
+                res.status(404).json({ error: 'erro ao mudar status da query' });
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({erro: "Erro de servidor", error})
     }
 })
 
