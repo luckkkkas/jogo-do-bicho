@@ -44,14 +44,12 @@ app.post('/CreateUser', (req, res) => {
         }
 
         const sql = "INSERT INTO logins value(?, ?, ?)"
-        //const id = Math.random()
-        pool.query(sql, ['id', usuario, pass], (err, results) => {
+        pool.query(sql, ["id", usuario, pass], (err, results) => {
             if (err) {
                 console.log("erro ao executar query:", err);
-                return res.status(500).json({ erro: "Erro de Servidor" });
+                return res.status(400).json(err);
             }
-            console.log(results)
-            return res.sendStatus(200)
+            return res.sendStatus(201)
         })
 
     } catch (error) {
