@@ -130,8 +130,8 @@ app.post('/Login', (req, res) => {
 app.put('/Update', (req, res)=>{
     try {
         const {id, status} = req.body;
-        const sql = "UPDATE task SET status = ? WHERE id = ?"
-        pool.query(sql, [1, id], (err, results)=>{
+        const sql = "UPDATE task SET status = ? WHERE id = ?;"
+        pool.query(sql, [status, id], (err, results)=>{
             if (err) {
                 console.error('Erro ao executar a query:', err);
                 return res.status(500).json({ error: 'Erro no servidor',
@@ -139,9 +139,10 @@ app.put('/Update', (req, res)=>{
                 });
             }
 
-            if (results.length > 0) {
+            if (results.affectedRows > 0) {
                 res.status(200).json({results });
             } else {
+                console.log(results)
                 res.status(404).json({ error: 'erro ao mudar status da query' });
             }
         })
